@@ -38,9 +38,7 @@ jobs:
 
   pest-oracle:
     name: Pest (Oracle XE 21c, integration)
-    # Pinned to 22.04: 24.04 (noble) renamed libaio1 -> libaio1t64, which the
-    # Oracle Instant Client 21.13 still binds to libaio.so.1.
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     services:
       oracle:
         image: gvenzl/oracle-xe:21-slim-faststart
@@ -62,19 +60,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Oracle Instant Client
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libaio1 unzip wget
-          wget -q https://download.oracle.com/otn_software/linux/instantclient/2113000/instantclient-basiclite-linux.x64-21.13.0.0.0dbru.zip
-          wget -q https://download.oracle.com/otn_software/linux/instantclient/2113000/instantclient-sdk-linux.x64-21.13.0.0.0dbru.zip
-          sudo mkdir -p /opt/oracle && cd /opt/oracle
-          sudo unzip -q "$GITHUB_WORKSPACE/instantclient-basiclite-linux.x64-21.13.0.0.0dbru.zip"
-          sudo unzip -q "$GITHUB_WORKSPACE/instantclient-sdk-linux.x64-21.13.0.0.0dbru.zip"
-          sudo mv instantclient_21_13 instantclient
-          echo /opt/oracle/instantclient | sudo tee /etc/ld.so.conf.d/oracle.conf
-          sudo ldconfig
-
+      # shivammathur/setup-php auto-installs Oracle Instant Client when oci8
+      # is in the extensions list — no manual wget/unzip step required.
       - name: Setup PHP 8.3 (with oci8)
         uses: shivammathur/setup-php@v2
         with:
@@ -82,9 +69,6 @@ jobs:
           extensions: mbstring, bcmath, zip, intl, oci8
           coverage: none
           tools: composer:v2
-        env:
-          ORACLE_HOME: /opt/oracle/instantclient
-          LD_LIBRARY_PATH: /opt/oracle/instantclient
 
       - name: Install deps
         run: composer install --no-interaction --prefer-dist --no-progress
@@ -105,5 +89,4 @@ jobs:
           DB_SERVICE_NAME: XEPDB1
           DB_USERNAME: mediacat
           DB_PASSWORD: mediacat
-          LD_LIBRARY_PATH: /opt/oracle/instantclient
         run: vendor/bin/pest --colors=always --testsuite=Feature
