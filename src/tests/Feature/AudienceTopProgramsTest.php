@@ -97,14 +97,6 @@ it('filters by channel code', function () {
         ->assertJsonPath('data.0.channel_code', 'KEPT');
 });
 
-it('rejects invalid limit', function () {
-    $this->getJson('/api/v1/audience/top-programs?limit=999')
-        ->assertStatus(422);
-    $this->getJson('/api/v1/audience/top-programs?limit=0')
-        ->assertStatus(422);
-});
-
-it('rejects to before from', function () {
-    $this->getJson('/api/v1/audience/top-programs?from=2026-12-01&to=2026-01-01')
-        ->assertStatus(422);
-});
+// Validation cases (limit out-of-range, to before from, malformed dates,
+// channel too long) live in AudienceValidationTest — they don't need an
+// Oracle service container to run.

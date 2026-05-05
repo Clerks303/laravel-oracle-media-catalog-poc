@@ -136,3 +136,40 @@ it('enforces non-overlap at the DB layer (Oracle trigger)', function () {
         'scheduled_at' => '2026-06-01 20:30:00',
     ]))->toThrow(\PDOException::class, 'ORA-20010');
 });
+
+it('maps ORA-20010 from the trigger to a 422 on the API', function () {
+    // Simulates a write path that bypasses BroadcastNonOverlapping (race,
+    // batch insert, future endpoint that forgot the rule). The ORA-20010 from
+    // the compound trigger must be translated to the same 422 contract the
+    // API rule produces — see bootstrap/app.php withExceptions handler.
+    if (DB::connection()->getDriverName() !== 'oracle') {
+        $this->markTestSkipped('Trigger to 422 mapping is meaningful only against Oracle.');
+    }
+
+    $channel = Channel::factory()->create();
+    $program = Program::factory()->create(['channel_id' => $channel->id, 'duration_min' => 60]);
+
+    Broadcast::factory()->create([
+        'program_id'   => $program->id,
+        'channel_id'   => $channel->id,
+        'scheduled_at' => '2026-06-01 20:00:00',
+    ]);
+
+    // Force-bypass the API rule by hitting the DB directly inside a request
+    // that still goes through the framework exception handler. We do it from
+    // a throwaway route registered for this test.
+    \Illuminate\Support\Facades\Route::post(
+        '/_test/raw-broadcast',
+        function () use ($program, $channel) {
+            \App\Models\Broadcast::create([
+                'program_id'   => $program->id,
+                'channel_id'   => $channel->id,
+                'scheduled_at' => '2026-06-01 20:30:00',
+            ]);
+        }
+    );
+
+    $this->postJson('/_test/raw-broadcast')
+        ->assertStatus(422)
+        ->assertJsonValidationErrors('scheduled_at');
+});

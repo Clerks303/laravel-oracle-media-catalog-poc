@@ -34,11 +34,15 @@ return new class extends Migration {
         FOR INSERT OR UPDATE OF scheduled_at, program_id, channel_id ON broadcasts
         COMPOUND TRIGGER
 
+            -- TIMESTAMP(6) matches the precision of broadcasts.scheduled_at
+            -- declared via Laravel's timestamp() (yajra/oci8 maps that to
+            -- TIMESTAMP(6) on Oracle). Using bare TIMESTAMP here would force
+            -- silent precision conversions on every row.
             TYPE row_t IS RECORD (
                 id           NUMBER,
                 program_id   NUMBER,
                 channel_id   NUMBER,
-                scheduled_at TIMESTAMP
+                scheduled_at TIMESTAMP(6)
             );
             TYPE row_tab IS TABLE OF row_t INDEX BY PLS_INTEGER;
             g_rows  row_tab;
@@ -58,10 +62,24 @@ return new class extends Migration {
                 v_overlap NUMBER;
             BEGIN
                 FOR i IN 1 .. g_count LOOP
-                    SELECT duration_min
-                      INTO v_new_dur
-                      FROM programs
-                     WHERE id = g_rows(i).program_id;
+                    -- The FK on program_id covers the happy path; this
+                    -- handler turns a defensive race (program deleted
+                    -- between the FK check and this re-query) into a
+                    -- typed application error instead of a raw ORA-01403.
+                    BEGIN
+                        SELECT duration_min
+                          INTO v_new_dur
+                          FROM programs
+                         WHERE id = g_rows(i).program_id;
+                    EXCEPTION
+                        WHEN NO_DATA_FOUND THEN
+                            RAISE_APPLICATION_ERROR(
+                                -20011,
+                                'Program ' || g_rows(i).program_id
+                                || ' not found while validating broadcast '
+                                || g_rows(i).id
+                            );
+                    END;
 
                     SELECT COUNT(*)
                       INTO v_overlap

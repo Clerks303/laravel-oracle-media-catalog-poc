@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\AudienceQueryRequest;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -12,10 +12,12 @@ use Illuminate\Support\Facades\DB;
  */
 class AudienceController extends Controller
 {
-    public function perChannel(Request $request)
+    public function perChannel(AudienceQueryRequest $request)
     {
-        $from = $request->query('from', now()->subMonth()->toDateString());
-        $to   = $request->query('to', now()->toDateString());
+        $validated = $request->validated();
+
+        $from = $validated['from'] ?? now()->subMonth()->toDateString();
+        $to   = $validated['to']   ?? now()->toDateString();
 
         $rows = DB::select(
             'SELECT channel_code, broadcast_count, avg_duration
@@ -34,14 +36,9 @@ class AudienceController extends Controller
      * Top N programs by airtime (broadcast_count × duration_min) over a window,
      * optionally filtered by channel code. Backed by audience_stats_pkg.top_programs.
      */
-    public function topPrograms(Request $request)
+    public function topPrograms(AudienceQueryRequest $request)
     {
-        $validated = $request->validate([
-            'from'    => ['nullable', 'date'],
-            'to'      => ['nullable', 'date', 'after_or_equal:from'],
-            'limit'   => ['nullable', 'integer', 'min:1', 'max:100'],
-            'channel' => ['nullable', 'string', 'max:16'],
-        ]);
+        $validated = $request->validated();
 
         $from    = $validated['from']    ?? now()->subMonth()->toDateString();
         $to      = $validated['to']      ?? now()->toDateString();
