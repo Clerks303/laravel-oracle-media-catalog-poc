@@ -1,8 +1,8 @@
 {
-    "name": "clerks303/arte-poc-laravel-oracle",
+    "name": "clerks303/laravel-oracle-media-catalog-poc",
     "type": "project",
-    "description": "Media catalog API — Laravel 11 + Oracle XE 21c POC for ARTE GEIE Marché 25213019.",
-    "keywords": ["laravel", "oracle", "oci8", "media-catalog", "arte"],
+    "description": "Media catalog REST API — Laravel 11 + Oracle XE 21c POC with Eloquent, PL/SQL pipelined function, Sanctum, Pest and GitHub Actions CI.",
+    "keywords": ["laravel", "oracle", "oci8", "media-catalog", "plsql", "rest-api"],
     "license": "MIT",
     "require": {
         "php": "^8.3",

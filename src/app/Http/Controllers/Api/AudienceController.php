@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Calls PL/SQL pipelined functions to return audience aggregates,
- * demonstrating the "ability to work without an ORM" point in the ARTE brief.
+ * demonstrating native SQL / PL-SQL usage alongside Eloquent.
  */
 class AudienceController extends Controller
 {

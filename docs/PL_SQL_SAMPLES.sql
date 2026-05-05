@@ -108,4 +108,4 @@ END audience_stats_pkg;
 -- 4) Example calls from SQL*Plus / SQL Developer ----------------------
 -- SELECT * FROM TABLE(audience_stats_pkg.per_channel(SYSDATE - 30, SYSDATE));
 -- SELECT * FROM TABLE(audience_stats_pkg.top_programs(SYSDATE - 30, SYSDATE, 10, NULL));
--- SELECT * FROM TABLE(audience_stats_pkg.top_programs(SYSDATE - 30, SYSDATE, 5,  'ARTEFR'));
+-- SELECT * FROM TABLE(audience_stats_pkg.top_programs(SYSDATE - 30, SYSDATE, 5,  'MED1FR'));

@@ -11,8 +11,8 @@ return [
             'port'           => env('DB_PORT', '1521'),
             'database'       => env('DB_DATABASE', 'XEPDB1'),
             'service_name'   => env('DB_SERVICE_NAME', 'XEPDB1'),
-            'username'       => env('DB_USERNAME', 'arte'),
-            'password'       => env('DB_PASSWORD', 'arte'),
+            'username'       => env('DB_USERNAME', 'mediacat'),
+            'password'       => env('DB_PASSWORD', 'mediacat'),
             'charset'        => env('DB_CHARSET', 'AL32UTF8'),
             'prefix'         => '',
             'prefix_schema'  => env('DB_SCHEMA_PREFIX', ''),
@@ -37,7 +37,7 @@ return [
         'client' => env('REDIS_CLIENT', 'phpredis'),
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix'  => env('REDIS_PREFIX', 'arte_poc_'),
+            'prefix'  => env('REDIS_PREFIX', 'mediacat_poc_'),
         ],
         'default' => [
             'url'      => env('REDIS_URL'),

@@ -40,7 +40,7 @@ it('keeps the editor user unique across multiple runs', function () {
     $this->seed();
     $this->seed();
 
-    expect(User::where('email', 'editor@arte.local')->count())->toBe(1);
+    expect(User::where('email', 'editor@mediacat.local')->count())->toBe(1);
 });
 
 it('does not duplicate genre codes', function () {

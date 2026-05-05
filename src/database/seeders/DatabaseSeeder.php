@@ -24,9 +24,9 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         User::firstOrCreate(
-            ['email' => 'editor@arte.local'],
+            ['email' => 'editor@mediacat.local'],
             [
-                'name'     => 'ARTE Editor',
+                'name'     => 'Catalog Editor',
                 'password' => Hash::make('password'),
             ],
         );
@@ -40,8 +40,8 @@ class DatabaseSeeder extends Seeder
         ])->map(fn ($g) => Genre::firstOrCreate(['code' => $g['code']], $g));
 
         $channels = collect([
-            ['code' => 'ARTEFR', 'name' => 'ARTE France',      'country' => 'FR', 'language' => 'fr'],
-            ['code' => 'ARTEDE', 'name' => 'ARTE Deutschland', 'country' => 'DE', 'language' => 'de'],
+            ['code' => 'MED1FR', 'name' => 'MediaOne France',      'country' => 'FR', 'language' => 'fr'],
+            ['code' => 'MED1DE', 'name' => 'MediaOne Deutschland', 'country' => 'DE', 'language' => 'de'],
         ])->map(fn ($c) => Channel::firstOrCreate(['code' => $c['code']], $c));
 
         $channels->each(function (Channel $channel) use ($genres) {

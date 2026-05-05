@@ -2,11 +2,11 @@ services:
   oracle:
     image: gvenzl/oracle-xe:21-slim-faststart
     platform: linux/amd64
-    container_name: arte_poc_oracle
+    container_name: mediacat_poc_oracle
     environment:
       ORACLE_PASSWORD: ${ORACLE_PASSWORD:-oracle}
-      APP_USER: ${ORACLE_APP_USER:-arte}
-      APP_USER_PASSWORD: ${ORACLE_APP_PASSWORD:-arte}
+      APP_USER: ${ORACLE_APP_USER:-mediacat}
+      APP_USER_PASSWORD: ${ORACLE_APP_PASSWORD:-mediacat}
     ports:
       - "1521:1521"
     volumes:
@@ -25,7 +25,7 @@ services:
       platforms:
         - linux/amd64
     platform: linux/amd64
-    container_name: arte_poc_php
+    container_name: mediacat_poc_php
     working_dir: /var/www/html
     volumes:
       - ./src:/var/www/html
@@ -34,15 +34,15 @@ services:
       DB_HOST: oracle
       DB_PORT: 1521
       DB_SERVICE_NAME: XEPDB1
-      DB_USERNAME: ${ORACLE_APP_USER:-arte}
-      DB_PASSWORD: ${ORACLE_APP_PASSWORD:-arte}
+      DB_USERNAME: ${ORACLE_APP_USER:-mediacat}
+      DB_PASSWORD: ${ORACLE_APP_PASSWORD:-mediacat}
     depends_on:
       oracle:
         condition: service_healthy
 
   nginx:
     image: nginx:1.27-alpine
-    container_name: arte_poc_nginx
+    container_name: mediacat_poc_nginx
     ports:
       - "8080:80"
     volumes:

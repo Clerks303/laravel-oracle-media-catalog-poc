@@ -4,11 +4,11 @@ Short, dated record of the non-obvious choices made in this POC.
 
 ## 1. Why a Media Catalog domain
 
-Closest plausible analog to ARTE's actual back-office without modelling anything confidential: channels, programs, scheduled broadcasts, replay windows. Lets the data model exercise the parts the brief cares about (Oracle types, foreign keys, dates, full-text-ish search) without inventing a fake domain.
+A realistic broadcaster back-office sketch: channels, programs, scheduled broadcasts, replay windows. Exercises the things Oracle-on-Laravel projects actually care about (Oracle types, foreign keys, dates, full-text-ish search) without inventing a fake domain or modelling anything confidential.
 
 ## 2. Eloquent + raw SQL, not one or the other
 
-`yajra/laravel-oci8` lets Eloquent target Oracle through `oci8`. Every CRUD route uses Eloquent (relations, scopes, paginate). The `audience/per-channel` endpoint deliberately calls `DB::select()` against a **PL/SQL pipelined function** — that's the "ability to work without an ORM" line item from the brief, demonstrated with real PL/SQL, not pseudo-SQL strings.
+`yajra/laravel-oci8` lets Eloquent target Oracle through `oci8`. Every CRUD route uses Eloquent (relations, scopes, paginate). The `audience/per-channel` endpoint deliberately calls `DB::select()` against a **PL/SQL pipelined function** — demonstrating native SQL / PL-SQL skills alongside the ORM, with real PL/SQL rather than pseudo-SQL strings.
 
 ## 3. Oracle-aware migrations
 
@@ -108,12 +108,12 @@ drivers.
 
 ## 11. Out of scope (deliberately)
 
-- Redis, queue workers, broadcasting — not in the brief.
-- A frontend — separate POC; ARTE's stack is React+TS+MUI, but this repo is the back-end half.
-- Multi-tenancy, GDPR tooling — would require real ARTE specs.
+- Redis, queue workers, broadcasting — out of scope for a back-end POC.
+- A frontend — this repo is the Laravel/Oracle back-end half only.
+- Multi-tenancy, GDPR tooling — would require real product specs.
 
 ## 12. What I'd do differently in production
 
 - Move PL/SQL definitions into a versioned `db/oracle/` directory with explicit ordering, not Laravel migrations. Migrations run inside a transaction; PL/SQL DDL implicitly commits, so mixing them is brittle past trivial cases.
-- Add Telescope only locally; ship logs to ARTE's existing observability instead.
+- Add Telescope only locally; ship logs to the host platform's existing observability instead.
 - Replace the synopsis `LIKE` search with Oracle Text (`CONTAINS`) once the volume justifies it.

@@ -1,18 +1,17 @@
-# ARTE Media Catalog — Laravel 11 + Oracle XE 21c POC
+# Laravel + Oracle Media Catalog POC
 
-Reference implementation for **ARTE GEIE Marché 25213019, Cat. 1** (Full-Stack Development).
-Demonstrates the exact stack listed in the brief: Laravel + Oracle/PL-SQL + REST + tests + CI.
+A small **Media Catalog REST API** built on **Laravel 11 + Oracle XE 21c**, demonstrating Eloquent against `oci8`, raw PL/SQL via a pipelined function, Sanctum-protected writes, Pest tests, and a two-track GitHub Actions CI (SQLite for fast feedback + Oracle XE service for integration).
 
 > Author: Romain Sultan · github.com/Clerks303 · MIT licensed.
-> This is a public artifact; no client data is involved.
+> Public artifact, fictional data — no client material involved.
 
 ---
 
 ## What it does
 
-A small **Media Catalog API** modelled around an ARTE-relevant domain:
+A media catalog domain (channels, programs, genres, broadcasts) with:
 
-- **Channels** (e.g. ARTE France, ARTE Deutschland)
+- **Channels** (e.g. MediaOne France, MediaOne Deutschland)
 - **Programs** (title, synopsis, duration, channel, genres)
 - **Genres** (Documentary, Fiction, News, Culture, Cinema)
 - **Broadcasts** (program × channel × scheduled time × replay window)
@@ -119,16 +118,9 @@ CI runs both suites on every push (`.github/workflows/ci.yml`).
 
 ---
 
-## Why this POC matters for the ARTE mission
+## What this POC demonstrates
 
-The ARTE technical brief lists, among others:
-
-- **Laravel** (back-end framework)
-- **Oracle / PL-SQL** (RDBMS, ability to work without an ORM)
-- **JS/TS/React** (front-end, covered by other deliverables)
-- **REST APIs**, **Git/GitHub Actions**, **tests**
-
-This repo is a focused proof for the back-end half:
+A focused proof for a Laravel + Oracle back-end:
 
 1. A **runnable Laravel 11 API** wired to **Oracle XE 21c** through `oci8`.
 2. **Oracle-aware migrations** (sequences, `VARCHAR2`, identifier limit, `CLOB` for synopsis, composite indexes).

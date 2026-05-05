@@ -44,8 +44,8 @@ jobs:
         image: gvenzl/oracle-xe:21-slim-faststart
         env:
           ORACLE_PASSWORD: oracle
-          APP_USER: arte
-          APP_USER_PASSWORD: arte
+          APP_USER: mediacat
+          APP_USER_PASSWORD: mediacat
         ports:
           - 1521:1521
         options: >-
@@ -101,7 +101,7 @@ jobs:
           DB_HOST: 127.0.0.1
           DB_PORT: 1521
           DB_SERVICE_NAME: XEPDB1
-          DB_USERNAME: arte
-          DB_PASSWORD: arte
+          DB_USERNAME: mediacat
+          DB_PASSWORD: mediacat
           LD_LIBRARY_PATH: /opt/oracle/instantclient
         run: vendor/bin/pest --colors=always --testsuite=Feature
