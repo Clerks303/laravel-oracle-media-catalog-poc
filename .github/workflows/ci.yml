@@ -31,14 +31,16 @@ jobs:
           key: composer-${{ hashFiles('src/composer.lock', 'src/composer.json') }}
 
       - name: Install deps
-        run: composer install --no-interaction --prefer-dist --no-progress
+        run: composer install --no-interaction --prefer-dist --no-progress --ignore-platform-req=ext-oci8
 
       - name: Run pest
         run: vendor/bin/pest --colors=always
 
   pest-oracle:
     name: Pest (Oracle XE 21c, integration)
-    runs-on: ubuntu-latest
+    # Pinned to 22.04: 24.04 (noble) renamed libaio1 -> libaio1t64, which the
+    # Oracle Instant Client 21.13 still binds to libaio.so.1.
+    runs-on: ubuntu-22.04
     services:
       oracle:
         image: gvenzl/oracle-xe:21-slim-faststart
