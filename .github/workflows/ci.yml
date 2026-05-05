@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  pest-sqlite:
+    name: Pest (SQLite, fast feedback)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo, pdo_sqlite, sqlite3, bcmath, zip, intl
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: composer-${{ hashFiles('src/composer.lock', 'src/composer.json') }}
+
+      - name: Install deps
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Run pest
+        run: vendor/bin/pest --colors=always
+
+  pest-oracle:
+    name: Pest (Oracle XE 21c, integration)
+    runs-on: ubuntu-latest
+    services:
+      oracle:
+        image: gvenzl/oracle-xe:21-slim-faststart
+        env:
+          ORACLE_PASSWORD: oracle
+          APP_USER: arte
+          APP_USER_PASSWORD: arte
+        ports:
+          - 1521:1521
+        options: >-
+          --health-cmd "healthcheck.sh"
+          --health-interval 20s
+          --health-timeout 10s
+          --health-retries 15
+          --health-start-period 60s
+    defaults:
+      run:
+        working-directory: src
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Oracle Instant Client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libaio1 unzip wget
+          wget -q https://download.oracle.com/otn_software/linux/instantclient/2113000/instantclient-basiclite-linux.x64-21.13.0.0.0dbru.zip
+          wget -q https://download.oracle.com/otn_software/linux/instantclient/2113000/instantclient-sdk-linux.x64-21.13.0.0.0dbru.zip
+          sudo mkdir -p /opt/oracle && cd /opt/oracle
+          sudo unzip -q "$GITHUB_WORKSPACE/instantclient-basiclite-linux.x64-21.13.0.0.0dbru.zip"
+          sudo unzip -q "$GITHUB_WORKSPACE/instantclient-sdk-linux.x64-21.13.0.0.0dbru.zip"
+          sudo mv instantclient_21_13 instantclient
+          echo /opt/oracle/instantclient | sudo tee /etc/ld.so.conf.d/oracle.conf
+          sudo ldconfig
+
+      - name: Setup PHP 8.3 (with oci8)
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, bcmath, zip, intl, oci8
+          coverage: none
+          tools: composer:v2
+        env:
+          ORACLE_HOME: /opt/oracle/instantclient
+          LD_LIBRARY_PATH: /opt/oracle/instantclient
+
+      - name: Install deps
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Wait for Oracle
+        run: |
+          for i in $(seq 1 30); do
+            nc -z localhost 1521 && echo "oracle up" && exit 0
+            sleep 5
+          done
+          echo "oracle did not come up" && exit 1
+
+      - name: Run pest against Oracle
+        env:
+          DB_CONNECTION: oracle
+          DB_HOST: 127.0.0.1
+          DB_PORT: 1521
+          DB_SERVICE_NAME: XEPDB1
+          DB_USERNAME: arte
+          DB_PASSWORD: arte
+          LD_LIBRARY_PATH: /opt/oracle/instantclient
+        run: vendor/bin/pest --colors=always --testsuite=Feature

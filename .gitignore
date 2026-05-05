@@ -1,0 +1,15 @@
+.env
+*.docx
+*.xlsx
+~$*
+src/vendor/
+src/node_modules/
+src/.env
+src/storage/logs/*
+src/storage/framework/cache/*
+src/storage/framework/sessions/*
+src/storage/framework/views/*
+src/bootstrap/cache/*
+.idea/
+.vscode/
+.DS_Store

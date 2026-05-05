@@ -1,0 +1,55 @@
+services:
+  oracle:
+    image: gvenzl/oracle-xe:21-slim-faststart
+    platform: linux/amd64
+    container_name: arte_poc_oracle
+    environment:
+      ORACLE_PASSWORD: ${ORACLE_PASSWORD:-oracle}
+      APP_USER: ${ORACLE_APP_USER:-arte}
+      APP_USER_PASSWORD: ${ORACLE_APP_PASSWORD:-arte}
+    ports:
+      - "1521:1521"
+    volumes:
+      - oracle_data:/opt/oracle/oradata
+      - ./docker/oracle/init:/container-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  php:
+    build:
+      context: ./docker/php
+      platforms:
+        - linux/amd64
+    platform: linux/amd64
+    container_name: arte_poc_php
+    working_dir: /var/www/html
+    volumes:
+      - ./src:/var/www/html
+    environment:
+      DB_CONNECTION: oracle
+      DB_HOST: oracle
+      DB_PORT: 1521
+      DB_SERVICE_NAME: XEPDB1
+      DB_USERNAME: ${ORACLE_APP_USER:-arte}
+      DB_PASSWORD: ${ORACLE_APP_PASSWORD:-arte}
+    depends_on:
+      oracle:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: arte_poc_nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./src:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - php
+
+volumes:
+  oracle_data:
